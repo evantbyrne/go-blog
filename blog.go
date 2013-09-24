@@ -1,9 +1,12 @@
 package main
 
 import (
+	_ "github.com/lib/pq"
 	"html/template"
 	"io"
 	"net/http"
+    "database/sql"
+    "log"
 )
 
 // --- Types ---
@@ -40,8 +43,39 @@ func RespondTemplate(response http.ResponseWriter, status int, template_file str
 func PageIndex(response http.ResponseWriter, request *http.Request) {
 	// Index
 	if (request.URL.Path == "/") {
-		article1 := Article{ Id: 1, Title: "First Article", Content: "Hello, World!" }
-		RespondTemplate(response, http.StatusOK, "template/index.html", []*Article{ &article1 })
+		db, err := sql.Open("postgres", "user=evantbyrne dbname=go_blog sslmode=disable")
+		if (err != nil) {
+			log.Fatal(err)
+		}
+
+		res := make([]Article, 0)
+		var (
+			id int
+			title string
+			content string
+		)
+		rows, err := db.Query("select * from article")
+		if (err != nil) {
+			log.Fatal(err)
+		}
+
+		defer rows.Close()
+		for rows.Next() {
+			err := rows.Scan(&id, &title, &content)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			res = append(res, Article{ Id: id, Title: title, Content: content })
+		}
+
+		err = rows.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer db.Close()
+		RespondTemplate(response, http.StatusOK, "template/index.html", res)
 
 	// Default to 404
 	} else {
