@@ -1,13 +1,13 @@
 package dao
 
-import "database/sql"
 import "log"
 import "strconv"
 
 import "../dto"
 import "../../util"
 
-func Query(db *sql.DB, sqlQuery string, args ...interface{}) []dto.Article {
+func Query(sqlQuery string, args ...interface{}) []dto.Article {
+	var db = util.DatabaseConnect()
 	var stmt, err = db.Prepare(sqlQuery)
 	if (err != nil) {
 		log.Fatal(err)
@@ -48,8 +48,7 @@ func GetArticleById(id string) (dto.Article, bool) {
 		return dto.Article{}, false
 	}
 
-	var db = util.DatabaseConnect()
-	var res = Query(db, "select * from article where id = $1", idInt)
+	var res = Query("select * from article where id = $1", idInt)
 	if len(res) < 1 {
 		return dto.Article{}, false
 	}
@@ -58,8 +57,5 @@ func GetArticleById(id string) (dto.Article, bool) {
 }
 
 func GetAllArticles() []dto.Article {
-	var db = util.DatabaseConnect()
-	var res = Query(db, "select * from article order by id desc")
-	defer db.Close()
-	return res
+	return Query("select * from article order by id desc")
 }
