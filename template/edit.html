@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Edit {{.Title}} - Blog</title>
+		<style type="text/css">
+			label {
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<form method="post">
+			<fieldset>
+				<label for="title">Title</label>
+				<input id="title" name="title" value="{{.Title}}" />
+			</fieldset>
+			<fieldset>
+				<label for="content">Content</label>
+				<textarea id="content" name="content">{{.Content}}</textarea>
+			</fieldset>
+			<input type="submit" value="Save" />
+		</form>
+	</body>
+</html>

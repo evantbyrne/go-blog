@@ -28,11 +28,30 @@ func PageView(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func PageEdit(response http.ResponseWriter, request *http.Request) {
+	var id = request.URL.Path[6:]
+	var res, success = dao.GetArticleById(id)
+	if success {
+		if(request.Method == "POST") {
+			request.ParseForm()
+			res.Title = request.PostForm.Get("title")
+			res.Content = request.PostForm.Get("content")
+			dao.UpdateArticle(res)
+			util.RespondTemplate(response, http.StatusOK, "template/view.html", res)
+		} else {
+			util.RespondTemplate(response, http.StatusOK, "template/edit.html", res)
+		}
+	} else {
+		util.RespondNotFound(response)
+	}
+}
+
 
 // --- Main ---
 
 func main() {
 	http.HandleFunc("/view/", PageView)
+	http.HandleFunc("/edit/", PageEdit)
 	http.HandleFunc("/", PageIndex)
 	http.ListenAndServe(":8100", nil)
 }

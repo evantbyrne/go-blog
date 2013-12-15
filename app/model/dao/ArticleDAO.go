@@ -59,3 +59,8 @@ func GetArticleById(id string) (dto.Article, bool) {
 func GetAllArticles() []dto.Article {
 	return Query("select * from article order by id desc")
 }
+
+func UpdateArticle(article dto.Article) {
+	var db = util.DatabaseConnect()
+	db.Exec("update article set title = $2, content = $3 where id = $1", article.Id, article.Title, article.Content)
+}
