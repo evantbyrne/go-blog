@@ -64,3 +64,8 @@ func UpdateArticle(article dto.Article) {
 	var db = util.DatabaseConnect()
 	db.Exec("update article set title = $2, content = $3 where id = $1", article.Id, article.Title, article.Content)
 }
+
+func CreateArticle(article dto.Article) {
+	var db = util.DatabaseConnect()
+	db.Exec("insert into article (title, content) values ($1, $2)", article.Title, article.Content)
+}

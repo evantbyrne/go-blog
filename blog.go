@@ -3,6 +3,7 @@ package main
 import "net/http"
 
 import "./app/model/dao"
+import "./app/model/dto"
 import "./app/util"
 
 // --- Pages ---
@@ -46,12 +47,26 @@ func PageEdit(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func PageCreate(response http.ResponseWriter, request *http.Request) {
+	if(request.Method == "POST") {
+		request.ParseForm()
+		dao.CreateArticle(dto.Article{
+			Title: request.PostForm.Get("title"),
+			Content: request.PostForm.Get("content"),
+		})
+		http.Redirect(response, request, "/", 303)
+	} else {
+		util.RespondTemplate(response, http.StatusOK, "template/create.html", dto.Article{})
+	}
+}
+
 
 // --- Main ---
 
 func main() {
 	http.HandleFunc("/view/", PageView)
 	http.HandleFunc("/edit/", PageEdit)
+	http.HandleFunc("/create/", PageCreate)
 	http.HandleFunc("/", PageIndex)
 	http.ListenAndServe(":8100", nil)
 }
