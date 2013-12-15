@@ -47,6 +47,21 @@ func PageEdit(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func PageDelete(response http.ResponseWriter, request *http.Request) {
+	var id = request.URL.Path[8:]
+	var res, success = dao.GetArticleById(id)
+	if success {
+		if(request.Method == "POST") {
+			dao.DeleteArticle(res.Id)
+			http.Redirect(response, request, "/", 303)
+		} else {
+			util.RespondTemplate(response, http.StatusOK, "template/delete.html", res)
+		}
+	} else {
+		util.RespondNotFound(response)
+	}
+}
+
 func PageCreate(response http.ResponseWriter, request *http.Request) {
 	if(request.Method == "POST") {
 		request.ParseForm()
@@ -66,6 +81,7 @@ func PageCreate(response http.ResponseWriter, request *http.Request) {
 func main() {
 	http.HandleFunc("/view/", PageView)
 	http.HandleFunc("/edit/", PageEdit)
+	http.HandleFunc("/delete/", PageDelete)
 	http.HandleFunc("/create/", PageCreate)
 	http.HandleFunc("/", PageIndex)
 	http.ListenAndServe(":8100", nil)

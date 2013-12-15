@@ -69,3 +69,8 @@ func CreateArticle(article dto.Article) {
 	var db = util.DatabaseConnect()
 	db.Exec("insert into article (title, content) values ($1, $2)", article.Title, article.Content)
 }
+
+func DeleteArticle(id int) {
+	var db = util.DatabaseConnect()
+	db.Exec("delete from article where id = $1", id)
+}
