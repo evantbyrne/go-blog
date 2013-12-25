@@ -2,25 +2,27 @@ package main
 
 import "net/http"
 
+import "github.com/gorilla/mux"
+
 import "./app/model/dao"
 import "./app/model/dto"
 import "./app/util"
 
+
 // --- Pages ---
 
+func PageNotFound(response http.ResponseWriter, request *http.Request) {
+	util.RespondNotFound(response)
+}
+
 func PageIndex(response http.ResponseWriter, request *http.Request) {
-	// Index
-	if (request.URL.Path == "/") {
-		res := dao.GetAllArticles()
-		util.RespondTemplate(response, http.StatusOK, "template/index.html", res)
-	} else {
-		util.RespondNotFound(response)
-	}
+	res := dao.GetAllArticles()
+	util.RespondTemplate(response, http.StatusOK, "template/index.html", res)
 }
 
 func PageView(response http.ResponseWriter, request *http.Request) {
-	// Article page
-	var id = request.URL.Path[6:]
+	var vars = mux.Vars(request)
+	var id = vars["id"]
 	var res, success = dao.GetArticleById(id)
 	if success {
 		util.RespondTemplate(response, http.StatusOK, "template/view.html", res)
@@ -30,7 +32,8 @@ func PageView(response http.ResponseWriter, request *http.Request) {
 }
 
 func PageEdit(response http.ResponseWriter, request *http.Request) {
-	var id = request.URL.Path[6:]
+	var vars = mux.Vars(request)
+	var id = vars["id"]
 	var res, success = dao.GetArticleById(id)
 	if success {
 		if(request.Method == "POST") {
@@ -48,7 +51,8 @@ func PageEdit(response http.ResponseWriter, request *http.Request) {
 }
 
 func PageDelete(response http.ResponseWriter, request *http.Request) {
-	var id = request.URL.Path[8:]
+	var vars = mux.Vars(request)
+	var id = vars["id"]
 	var res, success = dao.GetArticleById(id)
 	if success {
 		if(request.Method == "POST") {
@@ -79,10 +83,13 @@ func PageCreate(response http.ResponseWriter, request *http.Request) {
 // --- Main ---
 
 func main() {
-	http.HandleFunc("/view/", PageView)
-	http.HandleFunc("/edit/", PageEdit)
-	http.HandleFunc("/delete/", PageDelete)
-	http.HandleFunc("/create/", PageCreate)
-	http.HandleFunc("/", PageIndex)
+	r := mux.NewRouter()
+	r.NotFoundHandler = http.HandlerFunc(PageNotFound)
+	r.HandleFunc("/", PageIndex)
+	r.HandleFunc("/view/{id:[0-9]+}", PageView)
+	r.HandleFunc("/edit/{id:[0-9]+}", PageEdit)
+	r.HandleFunc("/delete/{id:[0-9]+}", PageDelete)
+	r.HandleFunc("/create", PageCreate)
+	http.Handle("/", r)
 	http.ListenAndServe(":8100", nil)
 }
