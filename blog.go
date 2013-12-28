@@ -4,9 +4,9 @@ import "net/http"
 
 import "github.com/gorilla/mux"
 
-import "./app/model/dao"
-import "./app/model/dto"
-import "./app/util"
+import "./util"
+import "./model/dao"
+import "./model/dto"
 
 
 // --- Pages ---
