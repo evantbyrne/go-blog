@@ -8,18 +8,28 @@ import _ "github.com/lib/pq"
 
 import "../model/dto"
 
-func Database() *sql.DB {
-	db, err := sql.Open("postgres", "user=evantbyrne dbname=go_blog sslmode=disable")
-	if (err != nil) {
-		log.Fatal(err)
-	}
-
-	return db
+type Database struct {
+	Connection *sql.DB
+	Opened bool
 }
 
-func DatabaseMap() *gorp.DbMap {
-	db := Database()
-	dbmap := &gorp.DbMap{ Db: db, Dialect: gorp.PostgresDialect{} }
+func (db *Database) Open() *sql.DB {
+	if !db.Opened {
+		connection, err := sql.Open("postgres", "user=evantbyrne dbname=go_blog sslmode=disable")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		db.Connection = connection
+		db.Opened = true
+	}
+
+	return db.Connection
+}
+
+func (db *Database) Gorp() *gorp.DbMap {
+	connection := db.Open()
+	dbmap := &gorp.DbMap{ Db: connection, Dialect: gorp.PostgresDialect{} }
 	dbmap.AddTableWithName(dto.Article{}, "article").SetKeys(true, "Id")
 	return dbmap
 }
