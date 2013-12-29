@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 import "net/http"
 
 import "github.com/gorilla/mux"
@@ -79,6 +80,21 @@ func PageCreate(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func PageLogin(response http.ResponseWriter, request *http.Request) {
+	if(request.Method == "POST") {
+		request.ParseForm()
+		email := request.PostForm.Get("email")
+		password := util.Hash(request.PostForm.Get("password"))
+		if dao.CheckUser(email, password) {
+			fmt.Println("Auth success")
+		} else {
+			fmt.Println("Auth failure")
+		}
+	}
+	
+	util.RespondTemplate(response, http.StatusOK, "template/login.html", dto.User{})
+}
+
 
 // --- Main ---
 
@@ -90,6 +106,7 @@ func main() {
 	r.HandleFunc("/edit/{id:[0-9]+}", PageEdit)
 	r.HandleFunc("/delete/{id:[0-9]+}", PageDelete)
 	r.HandleFunc("/create", PageCreate)
+	r.HandleFunc("/login", PageLogin)
 	http.Handle("/", r)
 	http.ListenAndServe(":8100", nil)
 }
